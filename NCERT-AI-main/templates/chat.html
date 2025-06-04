@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCERT AI Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lavender': '#9384ba',
+                        'green': '#85ba95',
+                        'red': '#f16464',
+                        'softblue': '#446484',
+                        'bg': '#fcfcf4',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .thinking-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #446484;
+            margin: 0 2px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        
+        .thinking-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .thinking-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        .chat-container {
+            height: 400px;
+        }
+        
+        @media (max-width: 640px) {
+            .chat-container {
+                height: calc(100vh - 200px);
+            }
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #9384ba;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #7a6b9e;
+        }
+        
+        .chat-container p,
+        .chat-container input,
+        .chat-container textarea {
+            font-size: 1.15rem;
+        }
+        
+        .chat-container .text-xs {
+            font-size: 1rem !important;
+        }
+    </style>
+</head>
+<body class="bg-bg min-h-screen font-sans overflow-hidden" style="background-image: url('https://i.pinimg.com/736x/72/37/9e/72379e05a1fa377ccd0ac924fd9532d7.jpg'); background-size: cover; background-position: center; background-attachment: fixed;">
+    <!-- Navbar -->
+    <nav class="bg-transparent py-4 px-6 w-full fixed top-0 z-10">
+        <div class="w-full flex justify-start items-center">
+            <div class="flex items-center">
+                <i class="fas fa-robot text-white text-2xl mr-2"></i>
+                <h1 class="text-2xl font-bold text-white">NCERT AI</h1>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-xl mx-auto flex flex-col justify-center items-center" style="height: calc(100vh - 64px); padding-top: 64px;">
+        <!-- Chat Container -->
+        <div class="bg-white bg-opacity-70 backdrop-blur-md rounded-3xl shadow-md flex flex-col w-full h-full">
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="chat-container p-4 overflow-y-auto custom-scrollbar space-y-4 flex-1" style="min-height: 0; padding-top: 1.5rem;">
+                <!-- AI Message -->
+                <div class="fade-in flex items-start" style="margin-top: 0.5rem;">
+                    <div class="flex-shrink-0 bg-lavender text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
+                        <i class="fas fa-robot text-sm"></i>
+                    </div>
+                    <div class="max-w-[80%]">
+                        <div class="bg-lavender bg-opacity-10 text-gray-800 p-3 rounded-lg rounded-tl-none">
+                            <p>Hello! Ask you doubts away, I am all ears!</p>
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                <!-- AI Thinking -->
+                <div id="thinkingIndicator" class="hidden flex items-start">
+                    <div class="flex-shrink-0 bg-lavender text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
+                        <i class="fas fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-lavender bg-opacity-10 text-gray-800 p-3 rounded-lg rounded-tl-none">
+                        <div class="flex items-center">
+                            <span class="thinking-dot"></span>
+                            <span class="thinking-dot"></span>
+                            <span class="thinking-dot"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-200 p-4 bg-gray-50 bg-opacity-60 rounded-b-3xl">
+                <div class="flex items-center">
+                    <input id="userInput" type="text" placeholder="Ask me anything..." class="flex-grow mx-2 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-transparent">
+                    <button id="sendButton" class="p-2 bg-lavender text-white rounded-full hover:bg-opacity-90 transition-colors">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const API_BASE = 'http://localhost:8000';
+            const chatMessages = document.getElementById('chatMessages');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const thinkingIndicator = document.getElementById('thinkingIndicator');
+
+            function addMessage(text, isUser) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `fade-in flex items-start ${isUser ? 'justify-end' : ''}`;
+                messageDiv.innerHTML = `
+                    ${isUser ? '' : `
+                        <div class="flex-shrink-0 bg-lavender text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
+                            <i class="fas fa-robot text-sm"></i>
+                        </div>
+                    `}
+                    <div class="max-w-[80%]">
+                        <div class="${isUser ? 'bg-green bg-opacity-20 rounded-lg rounded-tr-none' : 'bg-lavender bg-opacity-10 rounded-lg rounded-tl-none'} text-gray-800 p-3">
+                            <p>${text}</p>
+                        </div>
+                    </div>
+                    ${isUser ? `
+                        <div class="flex-shrink-0 bg-green text-white rounded-full w-8 h-8 flex items-center justify-center ml-2">
+                            <i class="fas fa-user text-sm"></i>
+                        </div>
+                    ` : ''}
+                `;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Educational chat event listeners
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Function to send educational chat message
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+                addMessage(message, true);
+                userInput.value = '';
+                thinkingIndicator.classList.remove('hidden');
+                try {
+                    const resp = await fetch(`${API_BASE}/educational-chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+                    const data = await resp.json();
+                    thinkingIndicator.classList.add('hidden');
+                    if (data.success) {
+                        addMessage(data.reply, false);
+                    } else {
+                        addMessage(`❌ ${data.error}`, false);
+                    }
+                } catch (err) {
+                    thinkingIndicator.classList.add('hidden');
+                    addMessage(`❌ Network error: ${err.message}`, false);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

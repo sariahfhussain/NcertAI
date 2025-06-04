@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCERT AI - Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #fcfcf4; color: #446484;
+            background-image: url('https://i.pinimg.com/736x/23/58/14/235814084335a12cbc1fd9492a3f3f99.jpg');
+            background-size: cover; background-repeat: no-repeat; background-position: center center;
+        }
+        .sidebar { background-color: rgba(252, 252, 196, 0.85); border: none; transition: all 0.3s ease;
+            border-top-right-radius: 1.5rem; border-bottom-right-radius: 1.5rem;
+            padding-top: 0.5rem; padding-bottom: 0.5rem; backdrop-filter: blur(4px);
+        }
+        .sidebar .nav-item, .sidebar h1, .sidebar span { font-size: 1.25rem; }
+        .nav-item:hover { background-color: #9384ba; color: white; }
+        .nav-item.active { background-color: #9384ba; color: white; font-weight: 500; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; height: 100vh; }
+            .sidebar.open { transform: translateX(0); }
+            .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                        background-color: rgba(0,0,0,0.5); z-index: 40; display: none; }
+            .overlay.open { display: block; }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+    <!-- Mobile menu button -->
+    <div class="md:hidden fixed top-4 left-4 z-30">
+        <button id="menuBtn" class="text-2xl text-[#446484]"><i class="fas fa-bars"></i></button>
+    </div>
+    <div id="overlay" class="overlay"></div>
+    <div id="sidebar" class="sidebar w-64 flex-shrink-0">
+        <div class="p-4 flex items-center justify-center">
+            <h1 class="text-2xl font-bold text-[#9384ba]">NCERT AI</h1>
+            <span class="ml-2 px-2 py-1 bg-[#85ba95] text-white text-xs rounded">Class 9</span>
+        </div>
+        <nav class="mt-6">
+            <div class="nav-item px-6 py-3 flex items-center cursor-pointer" onclick="window.location.href='/dashboard'">
+                <i class="fas fa-home mr-3"></i><span>Dashboard</span>
+            </div>
+            <div class="nav-item px-6 py-3 flex items-center cursor-pointer" onclick="window.location.href='/subjects'">
+                <i class="fas fa-book mr-3"></i><span>Subjects</span>
+            </div>
+            <div class="nav-item px-6 py-3 flex items-center cursor-pointer" onclick="window.location.href='/chat'">
+                <i class="fas fa-question-circle mr-3"></i><span>Ask a Question</span>
+            </div>
+            <div class="nav-item active px-6 py-3 flex items-center cursor-pointer">
+                <i class="fas fa-clipboard-list mr-3"></i><span>Quizzes</span>
+            </div>
+            <div class="nav-item px-6 py-3 flex items-center cursor-pointer" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt mr-3"></i><span>Logout</span>
+            </div>
+        </nav>
+    </div>
+    <div class="flex-1 overflow-auto">
+        <div class="p-6 md:p-8">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-[#446484]">Quiz Time!</h1>
+                    <p class="text-lg text-[#85ba95]">Generate your quiz</p>
+                </div>
+            </div>
+            <div class="bg-white bg-opacity-80 backdrop-blur-md rounded-xl p-6 max-w-xl mx-auto">
+                <div class="mb-4">
+                    <label for="subjectSelect" class="block text-[#446484] font-medium mb-2">Subject</label>
+                    <select id="subjectSelect" class="w-full border border-gray-300 rounded px-3 py-2">
+                        <option value="Science">Science</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="chapterSelect" class="block text-[#446484] font-medium mb-2">Chapter</label>
+                    <select id="chapterSelect" class="w-full border border-gray-300 rounded px-3 py-2">
+                        <option value="">Select Chapter</option>
+                        <option value="1">1. Matter in Our Surroundings</option>
+                        <option value="2">2. Is Matter Around Us Pure?</option>
+                        <option value="3">3. Atoms and Molecules</option>
+                        <option value="4">4. Structure of the Atom</option>
+                        <option value="5">5. The Fundamental Unit of Life</option>
+                        <option value="6">6. Tissues</option>
+                        <option value="7">7. Motion</option>
+                        <option value="8">8. Force and Laws of Motion</option>
+                        <option value="9">9. Gravitation</option>
+                        <option value="10">10. Work and Energy</option>
+                        <option value="11">11. Sound</option>
+                        <option value="12">12. Improvement in Food Resources</option>
+                    </select>
+                </div>
+                <button id="generateQuizBtn" class="w-full bg-[#9384ba] text-white font-medium py-2 rounded hover:bg-opacity-90 transition">
+                    Generate Quiz
+                </button>
+            </div>
+            <div id="quizContainer" class="mt-8 max-w-xl mx-auto"></div>
+        </div>
+    </div>
+    <script>
+        // Mobile menu toggle
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open'); overlay.classList.toggle('open');
+        });
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open'); overlay.classList.remove('open');
+        });
+        // Quiz generation and rendering
+        const API_BASE = 'http://localhost:8000';
+        document.getElementById('generateQuizBtn').addEventListener('click', async () => {
+            const subject = document.getElementById('subjectSelect').value;
+            const chapter = document.getElementById('chapterSelect').value;
+            const container = document.getElementById('quizContainer');
+            if (!chapter) { alert('Please select a chapter.'); return; }
+            container.innerHTML = '<p class="text-center text-[#446484]">Generating quiz...</p>';
+            try {
+                const resp = await fetch(`${API_BASE}/generate-quiz`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ subject, chapter })
+                });
+                const data = await resp.json();
+                if (data.success) renderQuiz(data.quiz);
+                else container.innerHTML = `<p class="text-red-500">${data.error}</p>`;
+            } catch (e) {
+                container.innerHTML = `<p class="text-red-500">Network error: ${e.message}</p>`;
+            }
+        });
+        function renderQuiz(quiz) {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            const form = document.createElement('form');
+            quiz.forEach((q, idx) => {
+                const div = document.createElement('div');
+                div.className = 'mb-6';
+                const p = document.createElement('p');
+                p.className = 'font-medium text-[#446484] mb-2';
+                p.textContent = `${idx+1}. ${q.question}`;
+                div.appendChild(p);
+                const letters = ['A','B','C','D'];
+                letters.forEach((letter, i) => {
+                    const optText = q.options[i] || '';
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center mb-1 text-[#446484]';
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = `q${idx}`;
+                    input.value = letter;
+                    input.className = 'mr-2';
+                    label.appendChild(input);
+                    const span = document.createElement('span');
+                    span.textContent = `${letter}. ${optText}`;
+                    label.appendChild(span);
+                    div.appendChild(label);
+                });
+                form.appendChild(div);
+            });
+            const submit = document.createElement('button'); submit.type = 'submit';
+            submit.textContent = 'Submit Answers';
+            submit.className = 'bg-[#85ba95] text-white font-medium py-2 px-4 rounded hover:bg-opacity-90 transition';
+            form.appendChild(submit);
+            container.appendChild(form);
+            form.addEventListener('submit', async e => {
+                e.preventDefault();
+                const answers = quiz.map((q, idx) => ({
+                    question: q.question,
+                    correct_answer: q.answer,
+                    selected_answer: form.elements[`q${idx}`].value || null
+                }));
+                container.innerHTML = '<p class="text-center text-[#446484]">Evaluating quiz...</p>';
+                try {
+                    const resp = await fetch(`${API_BASE}/evaluate-quiz`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ answers })
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        container.innerHTML = `<p class="text-center text-[#446484] text-xl">You scored ${data.total_correct} out of ${data.total_questions}</p>`;
+                        const resultsDiv = document.createElement('div');
+                        resultsDiv.className = 'mt-4 space-y-4';
+                        data.detailed_results.forEach((r, idx) => {
+                            const qDiv = document.createElement('div');
+                            qDiv.className = r.is_correct ? 'p-4 bg-green-100 rounded' : 'p-4 bg-red-100 rounded';
+                            qDiv.innerHTML = `
+                                <p class="font-medium text-[#446484]">${idx+1}. ${r.question}</p>
+                                <p class="text-sm"><strong>Your answer:</strong> ${r.selected_answer || 'No answer'}</p>
+                                <p class="text-sm"><strong>Correct answer:</strong> ${r.correct_answer}</p>
+                            `;
+                            resultsDiv.appendChild(qDiv);
+                        });
+                        container.appendChild(resultsDiv);
+                        const feedbackDiv = document.createElement('div');
+                        feedbackDiv.className = 'mt-6 p-4 bg-white bg-opacity-80 backdrop-blur-md rounded-xl';
+                        feedbackDiv.innerHTML = `<h2 class="text-lg font-semibold text-[#446484] mb-2">Personalized Feedback:</h2><p class="text-[#446484]">${data.feedback.replace(/\n/g, '<br>')}</p>`;
+                        container.appendChild(feedbackDiv);
+                    } else {
+                        container.innerHTML = `<p class="text-red-500">Error: ${data.error}</p>`;
+                    }
+                } catch (err) {
+                    container.innerHTML = `<p class="text-red-500">Network error: ${err.message}</p>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

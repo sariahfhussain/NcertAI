@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCERT AI - Subjects</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fcfcf4;
+            color: #446484;
+            background-image: url('https://i.pinimg.com/736x/27/65/a0/2765a07e935081e66d461fc940642a11.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(252, 252, 244, 0.459);
+            z-index: -1;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <div class="text-center mb-12">
+            <div class="inline-block bg-white bg-opacity-80 rounded-full px-6 py-2 mb-4 shadow-sm">
+                <span class="text-[#85ba95] font-medium"><i class="fas fa-book mr-2"></i>Subjects</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+                Select a Subject
+            </h1>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div class="card rounded-2xl p-8 cursor-pointer" onclick="window.location.href='/science9'">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-[#446484] bg-opacity-25 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-flask text-2xl text-[#446484]"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-[#446484] mb-2">Science</h3>
+                    <p class="text-sm text-[#9384ba]">Explore Class 9 Science chapters</p>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-12">
+            <button onclick="window.location.href='/dashboard'" class="bg-white bg-opacity-60 hover:bg-opacity-80 text-[#446484] font-medium py-2 px-6 rounded-full shadow-sm transition-all duration-300">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+</body>
+</html>
