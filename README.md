@@ -41,11 +41,23 @@
  ```
 
  ## Running the API
- Start the server with Uvicorn:
- ```bash
- uvicorn main:app --reload --host 0.0.0.0 --port 8000
- ```
- Visit `http://localhost:8000/docs` for interactive documentation.
+## Running the Services
+1. Run the PDF QA API (FastAPI)
+   ```bash
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+   - The API will be available at http://localhost:8000
+   - Open http://localhost:8000/docs for interactive API docs.
+
+2. Run the Web Application (Flask)
+   ```bash
+   cd NCERT-AI-main
+   python app.py
+   ```
+   - The web app will be available at http://localhost:5000
+   - It provides signup/login, chat, quiz, and PDF upload UI.
+
+Ensure both services are running in separate terminals so they can communicate (the Flask app points to the FastAPI endpoints on port 8000).
 
  ## Client Usage
  A simple client example is provided in `client.py`. Update `BASE_URL` and `SESSION_ID` as needed, then run:
